@@ -36,98 +36,136 @@ def home():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Log Summaries</title>
+        <title>DAppNode Log Summaries</title>
         <style>
             body {
-                font-family: Arial, sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f8f9fa;
                 margin: 0;
                 padding: 0;
-                background-color: #f5f5f5;
             }
             .container {
-                max-width: 1000px;
-                margin: 40px auto;
-                padding: 20px;
-                background: white;
+                max-width: 1200px;
+                margin: 30px auto;
+                background-color: #fff;
                 border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                padding: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
             h1 {
                 text-align: center;
                 color: #333;
+                margin-bottom: 30px;
+            }
+            .search-box {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            input[type="text"] {
+                width: 100%;
+                padding: 10px;
+                font-size: 1em;
+                border: 1px solid #ccc;
+                border-radius: 6px;
             }
             .log-entry {
-                margin-bottom: 40px;
-                border-bottom: 1px solid #ddd;
-                padding-bottom: 20px;
+                border-bottom: 1px solid #e0e0e0;
+                padding: 15px 0;
             }
-            h2 {
-                color: #0066cc;
+            .log-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .log-name {
+                font-weight: bold;
+                color: #007bff;
+                font-size: 1.1em;
+            }
+            .log-name:hover {
+                text-decoration: underline;
             }
             .meta-info {
-                color: #666;
                 font-size: 0.9em;
-                margin-bottom: 10px;
-            }
-            .log-content, .summary-content {
-                background-color: #f0f0f0;
-                padding: 10px;
-                border-radius: 6px;
-                white-space: pre-wrap;
-                font-family: monospace;
-                overflow-x: auto;
-                display: none;
-            }
-            .summary-content {
-                display: block;
-            }
-            .summary-label {
-                font-weight: bold;
-                margin-top: 10px;
-                display: block;
                 color: #555;
             }
-            button.toggle {
-                margin-top: 8px;
-                padding: 5px 10px;
-                font-size: 0.9em;
-                background-color: #007bff;
+            .summary-content,
+            .log-content {
+                background-color: #f1f1f1;
+                padding: 10px;
+                margin-top: 10px;
+                border-radius: 5px;
+                font-family: monospace;
+                white-space: pre-wrap;
+                display: none;
+            }
+            .toggle-button {
+                background-color: #28a745;
                 color: white;
                 border: none;
+                padding: 6px 12px;
                 border-radius: 4px;
                 cursor: pointer;
+                font-size: 0.85em;
             }
-            button.toggle:hover {
-                background-color: #0056b3;
+            .toggle-button:hover {
+                background-color: #218838;
+            }
+            .status {
+                font-size: 0.85em;
             }
         </style>
         <script>
-            function toggleLog(id) {
-                const elem = document.getElementById(id);
-                elem.style.display = (elem.style.display === "block") ? "none" : "block";
+            function toggleSection(id) {
+                const section = document.getElementById(id);
+                if (section.style.display === "none" || section.style.display === "") {
+                    section.style.display = "block";
+                } else {
+                    section.style.display = "none";
+                }
+            }
+
+            function filterLogs() {
+                const input = document.getElementById("searchInput").value.toLowerCase();
+                const entries = document.getElementsByClassName("log-entry");
+
+                for (let entry of entries) {
+                    const name = entry.getAttribute("data-name").toLowerCase();
+                    entry.style.display = name.includes(input) ? "" : "none";
+                }
             }
         </script>
     </head>
     <body>
         <div class="container">
-            <h1>📋 Log Summaries</h1>
+            <h1>📋 DAppNode Log Summaries</h1>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" onkeyup="filterLogs()" placeholder="Search logs by name...">
+            </div>
+
             {% for log in logs %}
-                <div class="log-entry">
-                    <h2>{{ log.filename }}</h2>
-                    <div class="meta-info">
-                        📁 Log modified: {{ log.log_mtime }}<br>
-                        📄 Summary modified: {{ log.summary_mtime }}<br>
-                        ✅ Summary status: <strong>{{ log.summary_status }}</strong>
-                    </div>
-
-                    <span class="summary-label">Summary:</span>
-                    <div class="summary-content">
-                        {{ log.summary if log.summary.strip() else "No summary available." }}
-                    </div>
-
-                    <button class="toggle" onclick="toggleLog('log-{{ loop.index }}')">Toggle Raw Log</button>
-                    <div id="log-{{ loop.index }}" class="log-content">{{ log.content }}</div>
+            <div class="log-entry" data-name="{{ log.filename }}">
+                <div class="log-header">
+                    <div class="log-name" title="{{ log.filename }}">{{ log.filename[:50] }}{% if log.filename|length > 50 %}...{% endif %}</div>
+                    <button class="toggle-button" onclick="toggleSection('log-{{ loop.index }}')">📝 Toggle Details</button>
                 </div>
+                <div class="meta-info">
+                    📁 Modified: {{ log.log_mtime }} |
+                    📄 Summary: {{ log.summary_mtime }} |
+                    ✅ Status: <strong>{{ log.summary_status }}</strong>
+                </div>
+
+                <div class="summary-content" style="display: block;">
+                    <strong>🧠 Summary:</strong><br>
+                    {{ log.summary if log.summary.strip() else "No summary available." }}
+                </div>
+
+                <div id="log-{{ loop.index }}" class="log-content">
+                    <strong>📄 Full Log:</strong><br>
+                    {{ log.content }}
+                </div>
+            </div>
             {% endfor %}
         </div>
     </body>
@@ -137,4 +175,4 @@ def home():
     return render_template_string(html_template, logs=logs)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8070)

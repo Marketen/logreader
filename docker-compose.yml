@@ -17,7 +17,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8080:8080"
+      - "8070:8070"
     volumes:
       - shared-logs:/logs
     depends_on:

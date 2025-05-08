@@ -19,14 +19,12 @@ ENV CMAKE_ARGS="-DLLAMA_MAX_CONTEXT=4096"
 # Set working directory
 WORKDIR /app
 
-# Download the model using Hugging Face CLI
-RUN huggingface-cli download TheBloke/Mistral-7B-Instruct-v0.1-GGUF \
-    mistral-7b-instruct-v0.1.Q4_K_M.gguf \
-    --local-dir /models \
-    --local-dir-use-symlinks False
-
-# Copy your script into the container
+# Copy project files
 COPY summarize.py .
+COPY entrypoint.sh .
 
-# Default command
-CMD ["python", "summarize.py"]
+# Make entrypoint script executable
+RUN chmod +x entrypoint.sh
+
+# Set entrypoint
+ENTRYPOINT ["./entrypoint.sh"]
