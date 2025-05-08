@@ -1,19 +1,17 @@
-version: '3.5'
-
+version: "3.5"
 services:
   log-reader:
     build: ./log-reader
     volumes:
-      # - /var/run/docker.sock:/var/run/docker.sock
       - shared-logs:/logs
     depends_on:
       - summarizer
-
+    image: log-reader.logreader.public.dappnode.eth:0.1.0
   summarizer:
     build: ./summarizer
     volumes:
       - shared-logs:/logs
-
+    image: summarizer.logreader.public.dappnode.eth:0.1.0
   frontend:
     build: ./frontend
     ports:
@@ -22,6 +20,6 @@ services:
       - shared-logs:/logs
     depends_on:
       - summarizer
-
+    image: frontend.logreader.public.dappnode.eth:0.1.0
 volumes:
   shared-logs: {}

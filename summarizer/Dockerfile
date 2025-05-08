@@ -1,19 +1,32 @@
 FROM python:3.11-slim
 
-# Install build dependencies and OpenBLAS for llama-cpp
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     libopenblas-dev \
     git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install llama-cpp-python
-RUN pip install llama-cpp-python
+# Install Python packages and Hugging Face CLI
+RUN pip install --no-binary llama-cpp-python --force-reinstall llama-cpp-python \
+    huggingface_hub
 
-# Copy model and script
+# Set environment variables
+ENV CMAKE_ARGS="-DLLAMA_MAX_CONTEXT=4096"
+
+# Set working directory
 WORKDIR /app
-COPY summarize.py .
-COPY models /models
 
+# Download the model using Hugging Face CLI
+RUN huggingface-cli download TheBloke/Mistral-7B-Instruct-v0.1-GGUF \
+    mistral-7b-instruct-v0.1.Q4_K_M.gguf \
+    --local-dir /models \
+    --local-dir-use-symlinks False
+
+# Copy your script into the container
+COPY summarize.py .
+
+# Default command
 CMD ["python", "summarize.py"]
