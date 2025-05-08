@@ -1,0 +1,27 @@
+version: '3.5'
+
+services:
+  log-reader:
+    build: ./log-reader
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - shared-logs:/logs
+    depends_on:
+      - summarizer
+
+  summarizer:
+    build: ./summarizer
+    volumes:
+      - shared-logs:/logs
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - shared-logs:/logs
+    depends_on:
+      - summarizer
+
+volumes:
+  shared-logs:
